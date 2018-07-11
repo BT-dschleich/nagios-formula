@@ -63,6 +63,8 @@ nagios:
     event_handler_timeout: 30
     notification_timeout: 30
     ocsp_timeout: 5
+    # This option allows you to specify a command to be run after every service check, which can be useful in distributed monitoring.
+    # ocsp_command: obsessive_service_handler
     perfdata_timeout: 5
     retain_state_information: 1
     retention_update_interval: 60
@@ -127,6 +129,7 @@ nagios:
     command_timeout: 60
     connection_timeout: 300
     dont_blame_nrpe: 0
+    allow_bash_command_substitution: 0
     nrpe_commands:
       - command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
       - command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
@@ -145,6 +148,10 @@ nagios:
       plugins: nagios-plugins
       server: nagios3
       service: nagios3
+      # enabled: Start and add to autostart
+      # disabled: Remove from autostart, but ignore if running or not
+      # dead: Stop and remove from autostart
+      service_status: enabled
       dynamic_cfg_dir: /etc/nagios3/dynamic/
       macro_users:
         USER3: "'s3crIt'"
@@ -156,6 +163,7 @@ nagios:
       server: nagios-nrpe
       service: nrpe
       user: nagios
+      cmd_mode: 644  # nagios.nrpe.dynamic - /etc/nagios/nrpe.d/* files modes
 
 # This pillar data targetted at minion(s) and at the Nagios host, both.
   checks:

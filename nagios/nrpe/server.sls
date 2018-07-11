@@ -9,6 +9,17 @@ nrpe-server-service:
     - name: {{ nrpe.service }}
     - enable: true
 
+{% if grains['os'] == 'FreeBSD' %}
+/usr/local/etc/nrpe.cfg:
+   file.managed:
+    - source: salt://nagios/nrpe/files/nrpe.cfg.jinja
+    - template: jinja
+    - user: root
+    - group: wheel
+    - mode: 644
+    - watch_in:
+      - service: {{ nrpe.service }}
+{% else %}
 /etc/nagios/nrpe.cfg:
    file.managed:
     - source: salt://nagios/nrpe/files/nrpe.cfg.jinja
@@ -18,13 +29,19 @@ nrpe-server-service:
     - mode: 644
     - watch_in:
       - service: {{ nrpe.service }}
+{% endif %}
 
-{% if grains['os_family'] == 'Debian' %}
-{# may be implied by the os_family, but let's be sure #}
 {{ nrpe.cfg_dir }}:
   file.directory:
     - require:
-      - pkg: nrpe-server-package
+      - pkg: {{ nrpe.server }}
+
+{% if grains['os_family'] == 'RedHat' %}
+{# create link on Redhat to be more close to debian and other distributions #}
+nagios_plugins_sym:
+  file.symlink:
+    - name: /usr/lib/nagios
+    - target: /usr/lib64/nagios
 {% endif %}
 
 {% if grains['os_family'] == 'Arch' %}

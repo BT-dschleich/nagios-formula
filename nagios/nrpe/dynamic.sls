@@ -10,12 +10,11 @@
 
 {% from "nagios/map.jinja" import nrpe with context %}
 
-{% if grains['os_family'] == 'Debian' %}
-{# TODO: extend this to other OS families; this currently depends on nrpe.d style #}
+{% if grains['os_family'] in ['Debian','RedHat']  %}
 
 include:
-  - .server
-  - .plugin
+  - nagios.nrpe.server
+  - nagios.plugins
 
 {% if salt['pillar.get']("nagios:checks", False) %}
 {% for check_name, check_def in salt['pillar.get']("nagios:checks").items() %}
@@ -27,14 +26,12 @@ include:
     - name: {{ nrpe.plugin_dir }}/{{ check_def['plugin']['plugin_file'] }}
     - source: {{ check_def['plugin']['plugin_source'] }}
     - mode: '0755'
-    - watch_in:
-      - service: nrpe-server-service
 {% else %}
   file.exists:
     - name: {{ nrpe.plugin_dir }}/{{ check_def['plugin']['plugin_file'] }}
 {%- endif %}
     - require:
-      - pkg: nrpe-plugin-package
+      - sls: nagios.plugins
 {% endif %}  # plugin_file in check_def['plugin']
 {% endif %}  # decommed
 
@@ -47,10 +44,11 @@ clear decommissioned {{ check_name }} nrpe command:
 {{ check_name }} nrpe command definition:
   file.managed:
     - name: {{ nrpe.cfg_dir }}/{{ check_name }}.cfg
+    - mode: {{ nrpe.cmd_mode }}
     - contents: |
         command[{{ check_name }}]={{ nrpe.plugin_dir }}/{{ check_def['plugin']['plugin_file'] }} {{ check_def['plugin'].get('plugin_args', "") }}
     - require:
-      - pkg: nrpe-plugin-package
+      - file: {{ check_name }} nagios plugin
       - file: {{ nrpe.cfg_dir }}
     - watch_in:
       - service: nrpe-server-service
@@ -60,4 +58,4 @@ clear decommissioned {{ check_name }} nrpe command:
 {% endfor %}  # end on the minion
 {% endif %}   # if salt['pillar.get']("nagios:checks", False)
 
-{% endif %}  # TODO: extend this to non-Debian os families
+{% endif %}  #
