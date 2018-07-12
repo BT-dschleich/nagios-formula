@@ -23,7 +23,7 @@
         'physical_html_path': '/usr/local/www/nagios',
         'url_html_path': '/nagios',
     },
-}, merge=salt['pillar.get']('nagios:lookup:cgi')) %}
+}, grain="os_family", merge=salt['pillar.get']('nagios:lookup:cgi')) %}
 
 {% set nagios = salt['grains.filter_by']({
     'Arch': {
@@ -113,7 +113,7 @@
         'status_file': '/var/spool/nagios/status.dat',
         'temp_file': '/var/spool/nagios/nagios.tmp',
     },
-}, merge=salt['pillar.get']('nagios:lookup:nagios')) %}
+}, grain="os_family", merge=salt['pillar.get']('nagios:lookup:nagios')) %}
 
 {% set nrpe = salt['grains.filter_by']({
     'default': {
@@ -154,7 +154,7 @@
         'server': 'nrpe3',
         'service': 'nrpe3',
     },
-}, merge=salt['pillar.get']('nagios:lookup:nrpe')) %}
+}, grain="os_family", merge=salt['pillar.get']('nagios:lookup:nrpe')) %}
 
 {% set nsca = salt['grains.filter_by']({
     'Arch': {
@@ -169,4 +169,4 @@
      'FreeBSD': {
          'client': 'nsca-client',
      },
-}, merge=salt['pillar.get']('nagios:lookup:nsca')) %}
+}, grain="os_family", merge=salt['pillar.get']('nagios:lookup:nsca')) %}
